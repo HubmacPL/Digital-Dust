@@ -11,7 +11,11 @@ const DEFAULT_TARGET = new THREE.Vector3(0, 0.4, 0)
 const Y_AXIS = new THREE.Vector3(0, 1, 0)
 const MAX_POLAR = Math.PI * 0.48
 const ARRIVE_THRESHOLD = 0.02
-const MAX_PAN_DRIFT = 1.8
+
+const PAN_FREE_ZONE = 1.2      // strefa martwa — brak oporu
+const PAN_SOFT_START = 1.8     // tu zaczyna się opór
+const PAN_SOFT_DECAY = 3.5     // jak szybko rośnie opór
+const PAN_HARD_LIMIT = 2.8     // absolutna granica
 
 /* ── Scratch vectors (reused per frame, zero GC) ── */
 const _offset = new THREE.Vector3()
@@ -26,6 +30,9 @@ export function CameraManager() {
   const { selectedService } = useGraveSelection()
   const { camera } = useThree()
 
+  const preFocusCam = useRef(new THREE.Vector3())
+  const preFocusTarget = useRef(new THREE.Vector3())
+
   /*
    * mode lives in BOTH ref (for useFrame reads, 60fps, no re-render)
    * and state (for OrbitControls prop changes, only on transitions).
@@ -39,6 +46,7 @@ export function CameraManager() {
   const lerpT = useRef(0)
   const startCam = useRef(new THREE.Vector3())
   const startTarget = useRef(new THREE.Vector3())
+  const isPointerDown = useRef(false)
 
   // Batched mode setter — safe to call from useFrame, batches React update
   const commitMode = useCallback((m: CameraMode) => {
@@ -49,11 +57,21 @@ export function CameraManager() {
 
   /* ── Block wheel during animation ── */
   useEffect(() => {
-    const block = (e: WheelEvent) => {
-      if (modeRef.current === 'animating') e.preventDefault()
+    const down = () => {
+      isPointerDown.current = true
     }
-    window.addEventListener('wheel', block, { passive: false })
-    return () => window.removeEventListener('wheel', block)
+
+    const up = () => {
+      isPointerDown.current = false
+    }
+
+    window.addEventListener('pointerdown', down)
+    window.addEventListener('pointerup', up)
+
+    return () => {
+      window.removeEventListener('pointerdown', down)
+      window.removeEventListener('pointerup', up)
+    }
   }, [])
 
   /* ── Per-frame logic ── */
@@ -73,9 +91,15 @@ export function CameraManager() {
     /* ── Detect selection change ── */
     const currentId = selectedService?.id ?? null
     if (currentId !== prevId.current) {
-      prevId.current = currentId
       startCam.current.copy(camera.position)
       startTarget.current.copy(ctr.target)
+
+      if (currentId !== null) {
+        preFocusCam.current.copy(camera.position)
+        preFocusTarget.current.copy(ctr.target)
+      }
+
+      prevId.current = currentId
       lerpT.current = 0
       // Only update ref for immediate use; React state follows at transition end
       modeRef.current = 'animating'
@@ -89,18 +113,18 @@ export function CameraManager() {
       const pop = selectedService.popularity ?? 50
       const tombScale = 1 + (pop / 100) * 1.2
       const panelY = 1.1 * tombScale + 3.4 / 2 + 0.3
-      _goalTarget.set(px, panelY / 2, pz)
-      _offset.set(0, 2.5, 6.0).applyAxisAngle(Y_AXIS, ry)
-      _goal.set(px + _offset.x, _offset.y, pz + _offset.z)
+      _goalTarget.set(px, panelY / 2 + 1.0, pz)
+      _offset.set(0, 2.5, 7.0).applyAxisAngle(Y_AXIS, ry)
+      _goal.set(px + _offset.x, _offset.y + 1.0, pz + _offset.z)
       _focusTarget.copy(_goalTarget)
     } else {
-      _goal.copy(DEFAULT_CAM)
-      _goalTarget.copy(DEFAULT_TARGET)
+      _goal.copy(preFocusCam.current)
+      _goalTarget.copy(preFocusTarget.current)
     }
 
     /* ── Animating ── */
     if (modeRef.current === 'animating') {
-      lerpT.current = Math.min(1, lerpT.current + dt * 2.2)
+      lerpT.current = Math.min(1, lerpT.current + dt * 0.7)
       const t = 1 - Math.pow(1 - lerpT.current, 3)
 
       camera.position.lerpVectors(startCam.current, _goal, t)
@@ -120,14 +144,37 @@ export function CameraManager() {
       return
     }
 
-    /* ── Focus: clamp pan drift ── */
+/* ── Focus: rubber band pan boundary ── */
     if (modeRef.current === 'focus' && selectedService) {
-      const drift = ctr.target.distanceTo(_focusTarget)
-      if (drift > MAX_PAN_DRIFT) {
-        ctr.target.lerp(_focusTarget, 0.15)
+      // 1. Obliczamy wektor wychylenia od centrum nagrobka
+      const dx = ctr.target.x - _focusTarget.x
+      const dy = ctr.target.y - _focusTarget.y
+      const dz = ctr.target.z - _focusTarget.z
+
+      // Odległość całkowita od celu
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+
+      // 2. Jeśli przekraczamy strefę wolną od oporu (PAN_FREE_ZONE)
+      if (distance > PAN_FREE_ZONE) {
+        // Obliczamy punkt na granicy naszej niewidzialnej "sfery" oporu
+        const dir = new THREE.Vector3(dx, dy, dz).normalize()
+        const edgePoint = _focusTarget.clone().add(dir.multiplyScalar(PAN_FREE_ZONE))
+
+        // 3. MAGIA: Siła sprężyny. 
+        // Jeśli użytkownik trzyma przycisk (ciągnie), dajemy słaby opór (czuje ciężar).
+        // Jeśli puści przycisk, sprężyna mocno i PŁYNNIE wciąga go z powrotem.
+        const springForce = isPointerDown.current ? 0.05 : 0.15
+
+        // Obliczamy o ile musimy dociągnąć kamerę w TEJ klatce
+        const correction = new THREE.Vector3().subVectors(edgePoint, ctr.target).multiplyScalar(springForce)
+
+        // 4. Aplikujemy korektę do CELU i do POZYCJI KAMERY (aby nie zepsuć kąta patrzenia)
+        ctr.target.add(correction)
+        camera.position.add(correction)
         ctr.update()
       }
     }
+
   })
 
   const isFree = mode === 'free'
