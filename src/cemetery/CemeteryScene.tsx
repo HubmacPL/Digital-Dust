@@ -8,18 +8,20 @@ import { MouseFollowSpotlight } from './MouseFollowSpotlight'
 import { Tombstone } from './Tombstone'
 import { getOrganicTransforms } from './organicLayout'
 import type { TombstoneData } from './types'
+import { useWindSound } from './useWindSound'
 
 type CemeterySceneProps = {
   services: TombstoneData[]
 }
 
+
 export function CemeteryScene({ services }: CemeterySceneProps) {
   const transforms = getOrganicTransforms(services)
-
+  useWindSound()
   return (
     <>
       <color attach="background" args={['#020108']} />
-      <fog attach="fog" args={['#080510', 9, 36]} />
+      <fog attach="fog" args={['#18112b', 4, 21]} />
 
       <GradientSky />
       <Stars
