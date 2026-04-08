@@ -1,73 +1,58 @@
-# React + TypeScript + Vite
+🌬️ Digital Dust: The Global Necropolis
+Digital Dust is an immersive, interactive 3D web experience built with Three.js and React. It serves as a haunting archive of the "dead" internet—a virtual cemetery dedicated to the services, platforms, and technologies that once shaped our digital lives but have since vanished into the void.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+💀 The Concept
+The internet moves fast, leaving behind a trail of digital ghosts. From the sunsetting of Adobe Flash to the quiet disappearance of Gadu-Gadu or MySpace profiles, these icons of the past deserve a final resting place.
 
-Currently, two official plugins are available:
+Digital Dust organizes these memories into a global map. Users navigate a mroczny (dark), 3D globe to visit specific national sectors, exploring rows of glowing tombstones shrouded in procedural fog.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+🚀 Features
+Atmospheric 3D World: A high-fidelity environment with volumetric fog, dynamic lighting, and post-processing effects (Bloom, Depth of Field).
 
-## React Compiler
+Interactive Global Navigation: An interactive 3D globe acting as a portal to different national cemetery sectors.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Epitaph System: Click on any tombstone to "summon its spirit"—revealing the history, dates of operation, and a link to the Wayback Machine.
 
-## Expanding the ESLint configuration
+Spatial Audio: Procedural wind sounds and audio cues that react to the user's movement and proximity to graves.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Multilingual Support: A built-in localization system (PL/EN) to honor the local history of the web.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+🛠️ Tech Stack
+Framework: React 19
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+3D Engine: Three.js via @react-three/fiber
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Utilities: @react-three/drei (Camera management, Helpers)
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Post-processing: postprocessing (DoF, Bloom, Grain)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Styling: CSS Modules / Tailwind CSS
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Deployment: Vercel
+
+📂 Project Structure
+/src/cemetery: Core Three.js logic, shaders, and 3D components.
+
+/src/context: State management for grave selection and camera transitions.
+
+/src/data: The "Graveyard Registry"—a structured database of digital services.
+
+/src/components: React UI overlay for epitaphs and navigation.
+
+🛠️ Getting Started
+Clone the repository:
+
+Bash
+git clone https://github.com/your-username/digital-dust.git
+Install dependencies:
+
+Bash
+npm install
+Run the development server:
+
+Bash
+npm run dev
+📜 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+“In the end, we are all just digital dust.” 💾🌌
