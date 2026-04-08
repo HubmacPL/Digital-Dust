@@ -7,7 +7,7 @@ type LanguageContextValue = {
 }
 
 const defaultLangCtx: LanguageContextValue = {
-  currentLanguage: 'pl',
+  currentLanguage: 'en',
   setLanguage: () => {},
 }
 
@@ -21,7 +21,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore */
     }
-    return 'pl'
+    return 'en'
   })
 
   const value = useMemo(
