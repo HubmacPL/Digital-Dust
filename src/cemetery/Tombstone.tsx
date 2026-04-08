@@ -9,6 +9,7 @@ import { GhostPortal } from './GhostPortal'
 import type { TombstoneProps } from './types'
 import { getStoneNoiseTexture } from './textures/stoneNoiseTexture'
 import { useTombstoneHoverSound } from './useTombstoneHoverSound'
+import { useTranslation } from '../context/LanguageContext'
 
 const BODY = { w: 0.55, h: 1.05, d: 0.14 }
 const CAP_R = BODY.w * 0.52
@@ -19,11 +20,10 @@ const _tombPos = new THREE.Vector3()
 
 export function Tombstone({
   id,
-  name,
+  translationKey,
   originDate,
   deathDate,
   color,
-  longDescription,
   waybackUrl,
   popularity = 50,
   position = [0, 0, 0],
@@ -36,6 +36,7 @@ export function Tombstone({
   const { selectedService, setSelectedService } = useGraveSelection()
   const { start: playHoverSound, stop: stopHoverSound } = useTombstoneHoverSound(id)
   const { camera } = useThree()
+  const { t } = useTranslation()
 
   const selected = selectedService?.id === id
 
@@ -53,11 +54,11 @@ export function Tombstone({
     stopHoverSound()
   }, [selected])
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     const g = groupRef.current
     const bodyM = bodyMatRef.current
     const capM = capMatRef.current
-    const time = state.clock.elapsedTime + noiseOffset
+    const time = (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000 + noiseOffset
     if (!g || !bodyM || !capM) return
 
     const emissiveTarget = hovered || selected ? 0.82 : 0
@@ -113,11 +114,10 @@ export function Tombstone({
     stopHoverSound()
     setSelectedService({
       id,
-      name,
+      translationKey,
       originDate,
       deathDate,
       color,
-      longDescription,
       waybackUrl,
       popularity,
       worldPosition: position,
@@ -128,8 +128,8 @@ export function Tombstone({
   const capY = BODY.h / 2 + CAP_R * 0.92
 
   const servicePayload = useMemo(
-    () => ({ id, name, originDate, deathDate, color, longDescription, waybackUrl, popularity }),
-    [id, name, originDate, deathDate, color, longDescription, waybackUrl, popularity],
+    () => ({ id, translationKey, originDate, deathDate, color, waybackUrl, popularity }),
+    [id, translationKey, originDate, deathDate, color, waybackUrl, popularity],
   )
 
   const scale = 1 + (popularity / 100) * 1.2
@@ -187,7 +187,7 @@ export function Tombstone({
             outlineOpacity={1}
             fillOpacity={1}
           >
-            {name}
+            {t(`tombstones.${translationKey}.name`)}
           </Text>
           <Text
             font={FONT_HEADSTONE_DATE}

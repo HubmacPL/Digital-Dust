@@ -47,6 +47,8 @@ src/
     ├── MouseFollowSpotlight.tsx
     ├── organicLayout.ts
     ├── fonts.ts
+    ├── useTombstoneHoverSound.tsx
+    ├── useWindSound.ts
     └── textures/
         └── stoneNoiseTexture.ts
 ```
@@ -118,6 +120,8 @@ Wszystkie komponenty 3D sceny cmentarza. Montowane przez `CemeteryScene`.
 | `MouseFollowSpotlight.tsx` | Reflektor podążający za kursorem myszy w przestrzeni 3D | `MouseFollowSpotlight` |
 | `organicLayout.ts` | Algorytm rozmieszczania nagrobków — oblicza `position` i `rotationY` dla każdego nagrobka, aby tworzyły naturalny, nieregularny układ | `getOrganicTransforms(services)` → `{ position, rotationY }[]` |
 | `fonts.ts` | Ładowanie i rejestracja fontów Three.js/Troika używanych w panelach tekstowych nagrobków | stałe ze ścieżkami fontów |
+| `useTombstoneHoverSound.tsx` | Hook odtwarzający dźwięk hoveru nagrobka (krótkie pyknięcie/efekt). Używany przez `Tombstone` podczas hover/enter/leave | `useTombstoneHoverSound` |
+| `useWindSound.ts` | Hook zarządzający ambientowym dźwiękiem wiatru; reguluje głośność i parametry przestrzenne w zależności od pozycji kamery i intensywności sceny | `useWindSound` |
 | `textures/stoneNoiseTexture.ts` | Generuje lub importuje teksturę szumu kamienia (normal/roughness map) dla materiałów nagrobków | `stoneNoiseTexture` lub `createStoneTexture()` |
 
 ---

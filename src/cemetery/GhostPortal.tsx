@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGraveSelection } from '../context/GraveSelectionContext'
 import { FONT_HEADSTONE_DATE, FONT_HEADSTONE_TITLE } from './fonts'
 import type { TombstoneData } from './types'
+import { useTranslation } from '../context/LanguageContext'
 
 /** Unscaled tombstone top (body height + cap). */
 const TOMBSTONE_TOP = 1.1
@@ -83,7 +84,9 @@ function useCursorBlink(interval = 530) {
 
 export function GhostPortal({ service, visible }: GhostPortalProps) {
   const { setSelectedService } = useGraveSelection()
-  const { visibleText, done } = useTypewriter(service.longDescription, visible)
+  const { t } = useTranslation()
+  const desc = t(`tombstones.${service.translationKey}.description`)
+  const { visibleText, done } = useTypewriter(desc, visible)
   const cursorOn = useCursorBlink()
 
   const tombScale = 1 + (service.popularity / 100) * 1.2
@@ -140,7 +143,7 @@ export function GhostPortal({ service, visible }: GhostPortalProps) {
           outlineWidth={0.006}
           outlineColor="#003333"
         >
-          {service.name}
+          {t(`tombstones.${service.translationKey}.name`)}
         </Text>
 
         {/* Dates */}
@@ -170,7 +173,7 @@ export function GhostPortal({ service, visible }: GhostPortalProps) {
           fillOpacity={0.6}
           letterSpacing={0.18}
         >
-          CAUSE OF DEATH
+          {t('ui.causeOfDeath')}
         </Text>
 
         {/* Description — typewriter */}

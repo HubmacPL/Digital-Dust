@@ -87,10 +87,10 @@ export function CyberFireflies() {
     return geom
   }, [fireflies])
 
-  useFrame(({ clock }) => {
+  useFrame(() => {
     const pts = pointsRef.current
     if (!pts) return
-    const t = clock.elapsedTime
+    const t = (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000
     const attr = pts.geometry.getAttribute('position') as THREE.BufferAttribute
     const arr = attr.array as Float32Array
 

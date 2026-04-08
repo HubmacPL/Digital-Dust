@@ -2,13 +2,13 @@ import type { ColorRepresentation } from 'three'
 
 export type TombstoneData = {
   id: string
-  name: string
   /** Rok / data startu (np. pierwsza wersja). */
   originDate: string
   /** Rok / data końca usługi. */
   deathDate: string
   color: ColorRepresentation
-  longDescription: string
+  /** Klucz do tłumaczeń (np. 'gadu-gadu') */
+  translationKey: string
   waybackUrl: string
   /** Popularność w skali 0–100: wpływa na pozycję, skalę i intensywność efektów. */
   popularity: number
